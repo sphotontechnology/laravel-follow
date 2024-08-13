@@ -22,28 +22,16 @@ trait Followable
 
     public function rejectFollowRequestFrom(Model $follower): void
     {
-        if (! in_array(Follower::class, \class_uses($follower))) {
-            throw new \InvalidArgumentException('The model must use the Follower trait.');
-        }
-
         $this->followables()->followedBy($follower)->get()->each->delete();
     }
 
     public function acceptFollowRequestFrom(Model $follower): void
     {
-        if (! in_array(Follower::class, \class_uses($follower))) {
-            throw new \InvalidArgumentException('The model must use the Follower trait.');
-        }
-
         $this->followables()->followedBy($follower)->get()->each->update(['accepted_at' => \now()]);
     }
 
     public function isFollowedBy(Model $follower): bool
     {
-        if (! in_array(Follower::class, \class_uses($follower))) {
-            throw new \InvalidArgumentException('The model must use the Follower trait.');
-        }
-
         if ($this->relationLoaded('followables')) {
             return $this->followables->whereNotNull('accepted_at')->contains($follower);
         }

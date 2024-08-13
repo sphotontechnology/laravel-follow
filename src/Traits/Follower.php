@@ -3,7 +3,6 @@
 namespace Overtrue\LaravelFollow\Traits;
 
 use function abort_if;
-use function class_uses;
 use function collect;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +12,6 @@ use Illuminate\Pagination\CursorPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Enumerable;
 use Illuminate\Support\LazyCollection;
-use function in_array;
 use InvalidArgumentException;
 use function is_array;
 use function iterator_to_array;
@@ -31,10 +29,6 @@ trait Follower
             throw new InvalidArgumentException('Cannot follow yourself.');
         }
 
-        if (! in_array(Followable::class, class_uses($followable))) {
-            throw new InvalidArgumentException('The followable model must use the Followable trait.');
-        }
-
         /** @var \Illuminate\Database\Eloquent\Model|\Overtrue\LaravelFollow\Traits\Followable $followable */
         $isPending = $followable->needsToApproveFollowRequests() ?: false;
 
@@ -50,10 +44,6 @@ trait Follower
 
     public function unfollow(Model $followable): void
     {
-        if (! in_array(Followable::class, class_uses($followable))) {
-            throw new InvalidArgumentException('The followable model must use the Followable trait.');
-        }
-
         $this->followings()->of($followable)->get()->each->delete();
     }
 
@@ -64,10 +54,6 @@ trait Follower
 
     public function isFollowing(Model $followable): bool
     {
-        if (! in_array(Followable::class, class_uses($followable))) {
-            throw new InvalidArgumentException('The followable model must use the Followable trait.');
-        }
-
         if ($this->relationLoaded('followings')) {
             return $this->followings
                 ->whereNotNull('accepted_at')
@@ -81,10 +67,6 @@ trait Follower
 
     public function hasRequestedToFollow(Model $followable): bool
     {
-        if (! in_array(\Overtrue\LaravelFollow\Traits\Followable::class, \class_uses($followable))) {
-            throw new InvalidArgumentException('The followable model must use the Followable trait.');
-        }
-
         if ($this->relationLoaded('followings')) {
             return $this->followings->whereNull('accepted_at')
                 ->where('followable_id', $followable->getKey())
@@ -149,7 +131,7 @@ trait Follower
             $resolver = $resolver ?? fn ($m) => $m;
             $followable = $resolver($followable);
 
-            if ($followable && in_array(Followable::class, class_uses($followable))) {
+            if ($followable) {
                 $item = $followed->where('followable_id', $followable->getKey())
                     ->where('followable_type', $followable->getMorphClass())
                     ->first();
